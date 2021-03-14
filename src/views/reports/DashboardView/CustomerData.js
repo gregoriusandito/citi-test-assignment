@@ -14,6 +14,7 @@ import {
 import XLSX from 'xlsx';
 import { useDropzone } from 'react-dropzone';
 import * as FileSaver from 'file-saver';
+import moment from 'moment';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -135,33 +136,32 @@ const CustomerData = ({ className, ...rest }) => {
         cleanData.forEach((value, index) => {
           if (tempArray.length === 0) {
             tempArray.push(value);
-          }
+          } else {
+            tempArray.sort((a, b) => {
+              return b[0] - a[0];
+            });
 
-          tempArray.sort((a, b) => {
-            return b[0] - a[0];
-          });
+            if (tempArray.length > 0) {
+              const [name, dob, ktp, date] = tempArray[0];
+              if (name !== value[0] || index === cleanData.length - 1) {
+                tempArray.forEach((val, idx) => {
+                  tempArray.sort((a, b) => {
+                    return b[3] - a[3];
+                  });
 
-          if (tempArray.length > 0) {
-            console.log(tempArray);
-            const [name, dob, ktp, date] = tempArray[0];
-            if (name !== value[0] || index === cleanData.length - 1) {
-              tempArray.forEach((val, idx) => {
-                tempArray.sort((a, b) => {
-                  return b[3] - a[3];
+                  if (idx < 3) {
+                    const [nameVal, dobVal, ktpVal, dateVal] = val;
+                    cleanArray.push([[cleanArray.length + 1, nameVal, dobVal, ktpVal].join(' | ')]);
+                  }
                 });
-
-                if (idx < 3) {
-                  const [nameVal, dobVal, ktpVal, dateVal] = val;
-                  cleanArray.push([[nameVal, dobVal, ktpVal].join(' | ')]);
-                }
-              });
-              tempArray = [];
+                tempArray = [];
+              }
+              tempArray.push(value);
             }
-            tempArray.push(value);
           }
         });
 
-        exportToSpreadsheet(cleanArray, jsonFromExcel, 'test');
+        exportToSpreadsheet(cleanArray, jsonFromExcel, 'Filter_Result_'.concat(moment(new Date()).format('DD_MM_YYYY_HH_mm_ss')));
       };
 
       if (rABS) reader.readAsBinaryString(file);
